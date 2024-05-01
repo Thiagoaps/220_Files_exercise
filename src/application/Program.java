@@ -19,45 +19,51 @@ public class Program {
 		Locale.setDefault(Locale.US);
 		Scanner sc = new Scanner(System.in);
 		List<Product> products = new ArrayList<>();
-		
+
 		System.out.println("Enter the file path: ");
 		String path = sc.nextLine();
-		
+
 		File filePath = new File(path);
-		
-		try (BufferedReader br = new BufferedReader(new FileReader(filePath))){
+		String sourceFolderStr = filePath.getParent(); // method to get the source of the file.
+
+		boolean success = new File(sourceFolderStr + "\\out").mkdir();
+		System.out.println("Directory created successfully: " + success);
+
+		String targetFileStr = sourceFolderStr + "\\out\\summary.csv";
+
+		try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
 			String line = br.readLine();
-			while(line != null) {
+			while (line != null) {
 				String[] fields = line.split(",");
 				String name = fields[0];
 				double price = Double.parseDouble(fields[1]);
-				int quantity = Integer.parseInt(fields[2]);				
-				products.add(new Product(name, price, quantity));				
-				line = br.readLine();							
+				int quantity = Integer.parseInt(fields[2]);
+				products.add(new Product(name, price, quantity));
+				line = br.readLine();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		String newPath = "c:\\temp";
-		boolean success = new File(newPath + "\\out").mkdir();
-		System.out.println("Directory created successfully: " + success);
-		
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter("c:\\temp\\out\\summary.csv"))){
-			
-			for (Product p : products) {
-				bw.write(p.getName() + ", " + p.totalValue());
-				bw.newLine();
+
+			try (BufferedWriter bw = new BufferedWriter(new FileWriter(targetFileStr))) {
+				for (Product p : products) {
+					bw.write(p.getName() + ", " + String.format("%.2f", p.totalValue()));
+					bw.newLine();
+				}
+
+				System.out.println(targetFileStr + " CREATED");
+
+			} catch (IOException e) {
+				System.out.println("Error writing file: " + e.getMessage());
 			}
+
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Error reading file: " + e.getMessage());
 		}
-				
+
+		System.out.println();
 		System.out.println("PRODUCTS WITH TOTAL VALUE:");
 		for (Product p : products) {
 			System.out.println(p);
 		}
-				
+
 		sc.close();
 	}
 }
